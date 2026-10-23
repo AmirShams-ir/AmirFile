@@ -1,7 +1,104 @@
-<template><div v-if="modelValue" class="overlay" @click.self="close"><div class="dialog" role="dialog" aria-modal="true" aria-label="File information"><div class="header"><div class="icon">{{item?.icon||"📄"}}</div><div class="heading"><h3>{{item?.name||"Item Information"}}</h3><p>{{isFolder?"Folder Information":"File Information"}}</p></div></div><div v-if="item" class="details"><div class="row"><span>Type</span><strong>{{info.type||(isFolder?"Folder":"File")}}</strong></div><div class="row"><span>Size</span><strong>{{isFolder?"—":formatSize(info.size)}}</strong></div><div class="row"><span>Created</span><strong>{{formatDate(info.created_at)}}</strong></div><div v-if="!isFolder" class="row link-row"><span>Link</span><a :href="absoluteUrl(info.url)" target="_blank" rel="noopener">{{absoluteUrl(info.url)||"—"}}</a></div><div v-if="!isFolder" class="row"><span>MIME</span><strong>{{info.mime||"—"}}</strong></div></div><p v-if="loading" class="status">Loading information…</p><p v-if="error" class="error">{{error}}</p><div class="buttons"><button type="button" @click="close">Close</button></div></div></div></template>
+<template>
+  <div v-if="modelValue" class="overlay" @click.self="close">
+    <div class="dialog" role="dialog" aria-modal="true" aria-label="File information">
+      <div class="header">
+        <div class="icon">{{ item?.icon || "📄" }}</div>
+        <div class="heading">
+          <h3>{{ item?.name || "Item Information" }}</h3>
+          <p>{{ isFolder(item) ? "Folder Information" : "File Information" }}</p>
+        </div>
+      </div>
+
+      <div v-if="item" class="details">
+        <div class="row"><span>Type</span><strong>{{ info.type || (isFolder(item) ? "Folder" : "File") }}</strong></div>
+        <div class="row"><span>Size</span><strong>{{ isFolder(item) ? "—" : formatSize(info.size) }}</strong></div>
+        <div class="row"><span>Created</span><strong>{{ formatDate(info.created_at) }}</strong></div>
+        <div v-if="item && !isFolder(item)" class="row link-row">
+          <span>Link</span>
+          <a :href="absoluteUrl(info.url)" target="_blank" rel="noopener">{{ absoluteUrl(info.url) || "—" }}</a>
+        </div>
+        <div v-if="item && !isFolder(item)" class="row"><span>MIME</span><strong>{{ info.mime || "—" }}</strong></div>
+      </div>
+
+      <p v-if="loading" class="status">Loading information…</p>
+      <p v-if="error" class="error">{{ error }}</p>
+      <div class="buttons"><button type="button" @click="close">Close</button></div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
-import {ref,watch} from "vue";import api from "../services/api";import type {Folder,MediaFile} from "../types/media";type Item=Folder|MediaFile;const props=defineProps<{modelValue:boolean;item:Item|null}>();const emit=defineEmits<{(e:"update:modelValue",value:boolean):void}>();const loading=ref(false),error=ref("");const info=ref<{type:string;size:number|null;created_at:string|null;modified_at?:string|null;url:string;mime:string}>({type:"",size:null,created_at:null,url:"",mime:""});const isFolder=(item:Item|null):item is Folder=>!!item&&!("stream_url" in item);function close(){emit("update:modelValue",false)}function formatSize(s:number|null){if(s==null)return"Unknown";if(s<1024)return s+" B";if(s<1048576)return(s/1024).toFixed(1)+" KB";if(s<1073741824)return(s/1048576).toFixed(1)+" MB";return(s/1073741824).toFixed(2)+" GB"}function absoluteUrl(v:string){if(!v)return"";try{return new URL(v,window.location.origin).href}catch{return v}}function formatDate(v:string|null){if(!v)return"Not available";const d=new Date(v);return Number.isNaN(d.getTime())?v:d.toLocaleString()}async function load(){error.value="";if(!props.item||isFolder(props.item))return;loading.value=true;try{info.value=await api.getFileInfo(props.item.id)}catch(e){error.value=e instanceof Error?e.message:"Could not load file information."}finally{loading.value=false}}watch(()=>[props.modelValue,props.item?.id],([open])=>{if(open)load()},{immediate:true});
+import { ref, watch } from "vue";
+import api from "../services/api";
+import type { Folder, MediaFile } from "../types/media";
+
+type Item = Folder | MediaFile;
+const props = defineProps<{ modelValue: boolean; item: Item | null }>();
+const emit = defineEmits<{ (event: "update:modelValue", value: boolean): void }>();
+
+const loading = ref(false);
+const error = ref("");
+const info = ref<{
+  type: string;
+  size: number | null;
+  created_at: string | null;
+  modified_at?: string | null;
+  url: string;
+  mime: string;
+}>({ type: "", size: null, created_at: null, url: "", mime: "" });
+
+const isFolder = (item: Item | null): item is Folder => !!item && !("stream_url" in item);
+
+function close() {
+  emit("update:modelValue", false);
+}
+
+function formatSize(size: number | null) {
+  if (size == null) return "Unknown";
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+function absoluteUrl(value: string) {
+  if (!value) return "";
+  try { return new URL(value, window.location.origin).href; } catch { return value; }
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "Not available";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+async function load() {
+  error.value = "";
+  if (!props.item || isFolder(props.item)) return;
+  loading.value = true;
+  try {
+    info.value = await api.getFileInfo(props.item.id);
+  } catch (reason) {
+    error.value = reason instanceof Error ? reason.message : "Could not load file information.";
+  } finally {
+    loading.value = false;
+  }
+}
+
+watch(() => [props.modelValue, props.item?.id], ([open]) => {
+  if (open) void load();
+}, { immediate: true });
 </script>
+
 <style scoped>
-.overlay{position:fixed;inset:0;z-index:1100;display:flex;align-items:center;justify-content:center;padding:20px;background:#0007;backdrop-filter:blur(2px)}.dialog{width:min(520px,100%);border:1px solid var(--border-strong);border-radius:10px;background:var(--dialog-bg);color:var(--text-1);box-shadow:0 18px 50px #0005;overflow:hidden}.header{display:flex;gap:12px;align-items:center;padding:18px;border-bottom:1px solid var(--border)}.icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--border);border-radius:8px;background:var(--surface-3);font-size:22px}h3{margin:0;font-size:17px;word-break:break-word}.heading p{margin:3px 0 0;color:var(--text-3);font-size:12px}.details{padding:8px 18px}.row{display:grid;grid-template-columns:105px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}.row span{color:var(--text-2)}.row strong{font-weight:600;word-break:break-word}.link-row a{color:var(--accent-strong);word-break:break-all;text-decoration:none}.status,.error{margin:10px 18px;font-size:12px}.status{color:var(--text-3)}.error{color:var(--danger)}.buttons{display:flex;justify-content:flex-end;padding:14px 18px;background:var(--surface-2)}button{min-width:78px;padding:8px 15px;border:1px solid var(--border-strong);border-radius:6px;background:var(--button-bg);color:var(--text-2);font-weight:600;cursor:pointer}
+.overlay{position:fixed;inset:0;z-index:1100;display:flex;align-items:center;justify-content:center;padding:20px;background:#0007;backdrop-filter:blur(2px)}
+.dialog{width:min(520px,100%);border:1px solid var(--border-strong);border-radius:10px;background:var(--dialog-bg);color:var(--text-1);box-shadow:0 18px 50px #0005;overflow:hidden}
+.header{display:flex;gap:12px;align-items:center;padding:18px;border-bottom:1px solid var(--border)}
+.icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--border);border-radius:8px;background:var(--surface-3);font-size:22px}
+h3{margin:0;font-size:17px;word-break:break-word}.heading p{margin:3px 0 0;color:var(--text-3);font-size:12px}
+.details{padding:8px 18px}.row{display:grid;grid-template-columns:105px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+.row span{color:var(--text-2)}.row strong{font-weight:600;word-break:break-word}.link-row a{color:var(--accent-strong);word-break:break-all;text-decoration:none}
+.status,.error{margin:10px 18px;font-size:12px}.status{color:var(--text-3)}.error{color:var(--danger)}
+.buttons{display:flex;justify-content:flex-end;padding:14px 18px;background:var(--surface-2)}
+button{min-width:78px;padding:8px 15px;border:1px solid var(--border-strong);border-radius:6px;background:var(--button-bg);color:var(--text-2);font-weight:600;cursor:pointer}
 </style>
