@@ -1,4 +1,5 @@
-export default async function handler() {
+export default {
+  async fetch(): Promise<Response> {
     const configured = {
       database: Boolean(process.env.DATABASE_URL),
       blob: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
@@ -8,4 +9,5 @@ export default async function handler() {
       status: 200,
       headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
     });
-}
+  },
+};
