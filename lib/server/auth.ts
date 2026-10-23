@@ -1,4 +1,4 @@
-import { json } from "./http";
+import { json } from "./http.js";
 const COOKIE_NAME = "amirfile_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 7;
 function sessionSecret(): string | null { return process.env.AMIRFILE_SESSION_SECRET || null; }

@@ -1,6 +1,6 @@
-import { getDatabase } from "../lib/server/db";
-import { requireAuth } from "../lib/server/auth";
-import { ApiError, assertMethod, cleanText, errorResponse, json, readJson } from "../lib/server/http";
+import { getDatabase } from "../lib/server/db.js";
+import { requireAuth } from "../lib/server/auth.js";
+import { ApiError, assertMethod, cleanText, errorResponse, json, readJson } from "../lib/server/http.js";
 
 export default {
   async fetch(request: Request): Promise<Response> {

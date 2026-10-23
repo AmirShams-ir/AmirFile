@@ -1,5 +1,5 @@
-import { authConfigurationError, clearSessionCookie, isAuthenticated, issueSessionToken, newSessionCookie, verifyAccessPassword } from "../lib/server/auth";
-import { json } from "../lib/server/http";
+import { authConfigurationError, clearSessionCookie, isAuthenticated, issueSessionToken, newSessionCookie, verifyAccessPassword } from "../lib/server/auth.js";
+import { json } from "../lib/server/http.js";
 
 export default {
   async fetch(request: Request): Promise<Response> {

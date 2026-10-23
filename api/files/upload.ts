@@ -1,8 +1,8 @@
 import { head } from "@vercel/blob";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { getDatabase } from "../../lib/server/db";
-import { requireAuth } from "../../lib/server/auth";
-import { ApiError, errorResponse, json, cleanText } from "../../lib/server/http";
+import { getDatabase } from "../../lib/server/db.js";
+import { requireAuth } from "../../lib/server/auth.js";
+import { ApiError, errorResponse, json, cleanText } from "../../lib/server/http.js";
 
 export default {
   async fetch(request: Request): Promise<Response> {
