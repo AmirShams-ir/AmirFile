@@ -4,8 +4,7 @@ import { getDatabase } from "../../lib/server/db";
 import { requireAuth } from "../../lib/server/auth";
 import { ApiError, errorResponse, json, cleanText } from "../../lib/server/http";
 
-export default {
-  async fetch(request: Request): Promise<Response> {
+export default async function handler(request: Request): Promise<Response> {
     if (request.method !== "POST") return json({ error: "Only POST is supported." }, 405);
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
       return json({ error: "Set BLOB_READ_WRITE_TOKEN in Vercel Project Settings and connect a Blob store before uploading files." }, 503);
@@ -68,5 +67,4 @@ export default {
     } catch (error) {
       return errorResponse(error);
     }
-  },
-};
+}
