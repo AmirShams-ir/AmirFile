@@ -1,0 +1,2 @@
+export interface Folder { id:string; parent_id:string|null; name:string; icon:string; modified_at?:string|null; }
+export interface MediaFile { id:string; folder_id:string; name:string; stream_url:string; icon:string; modified_at?:string|null; created_at?:string|null; }
