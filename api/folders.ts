@@ -2,7 +2,8 @@ import { getDatabase } from "../lib/server/db";
 import { requireAuth } from "../lib/server/auth";
 import { ApiError, assertMethod, cleanText, errorResponse, json, readJson } from "../lib/server/http";
 
-export default async function handler(request: Request): Promise<Response> {
+export default {
+  async fetch(request: Request): Promise<Response> {
     const denied = await requireAuth(request);
     if (denied) return denied;
     const methodError = assertMethod(request, ["GET", "POST", "PUT", "DELETE"]);
@@ -62,4 +63,5 @@ export default async function handler(request: Request): Promise<Response> {
       if (!deleted.length) throw new ApiError(404, "Folder not found.");
       return json({ ok: true, id });
     } catch (error) { return errorResponse(error); }
-}
+  },
+};
