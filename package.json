@@ -1,9 +1,13 @@
 {
   "name": "amirfile",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": { "dev": "vite", "build": "vue-tsc --noEmit && vite build", "preview": "vite preview" },
-  "dependencies": { "vue": "^3.5.41" },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "@vercel/blob": "^2.8.2",
+    "vue": "^3.5.41"
+  },
   "devDependencies": { "@vitejs/plugin-vue": "^6.0.8", "typescript": "~6.0.2", "vite": "^8.2.0", "vue-tsc": "^3.1.5" }
 }
