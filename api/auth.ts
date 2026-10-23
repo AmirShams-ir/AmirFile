@@ -1,8 +1,7 @@
 import { authConfigurationError, clearSessionCookie, isAuthenticated, issueSessionToken, newSessionCookie, verifyAccessPassword } from "../lib/server/auth";
 import { json } from "../lib/server/http";
 
-export default {
-  async fetch(request: Request): Promise<Response> {
+export default async function handler(request: Request): Promise<Response> {
     const method = request.method.toUpperCase();
     if (method === "DELETE") {
       const response = json({ authenticated: false });
@@ -29,5 +28,4 @@ export default {
     const response = json({ authenticated: true });
     response.headers.set("set-cookie", newSessionCookie(token));
     return response;
-  },
-};
+}
