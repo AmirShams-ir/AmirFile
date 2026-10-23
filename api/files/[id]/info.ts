@@ -2,8 +2,7 @@ import { getDatabase } from "../../../lib/server/db";
 import { requireAuth } from "../../../lib/server/auth";
 import { ApiError, errorResponse, json } from "../../../lib/server/http";
 
-export default {
-  async fetch(request: Request): Promise<Response> {
+export default async function handler(request: Request): Promise<Response> {
     if (request.method !== "GET") return json({ error: "Only GET is supported." }, 405);
     const denied = await requireAuth(request);
     if (denied) return denied;
@@ -27,5 +26,4 @@ export default {
         mime: file.mime_type || "application/octet-stream",
       } });
     } catch (error) { return errorResponse(error); }
-  },
-};
+}
