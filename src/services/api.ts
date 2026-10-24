@@ -1,4 +1,3 @@
-import { upload as uploadToBlob } from "@vercel/blob/client";
 import type { MediaFile } from "../types/media";
 const API_PREFIX = "/api";
 const api = (path: string) => API_PREFIX + path;
@@ -55,13 +54,6 @@ export async function getFiles(folderId: string): Promise<MediaFile[]> {
 export async function createFile(data: { folder_id: string; name: string; stream_url: string; icon: string }) {
   return requestJson("/files", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
 }
-export async function uploadFile(folderId: string, file: File) {
-  await uploadToBlob(file.name, file, {
-    access: "public",
-    handleUploadUrl: api("/files/upload"),
-    clientPayload: JSON.stringify({ folder_id: folderId }),
-  });
-}
 export async function renameFile(id: string, name: string, stream_url: string) {
   return requestJson("/files", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, name, stream_url }) });
 }
@@ -77,5 +69,5 @@ export async function getFileInfo(id: string) {
 }
 export default {
   getAuthState, login, logout, getFileInfo, getFolders, createFolder, renameFolder, deleteFolder, moveFolder,
-  getFiles, createFile, uploadFile, renameFile, moveFile, deleteFile,
+  getFiles, createFile, renameFile, moveFile, deleteFile,
 };

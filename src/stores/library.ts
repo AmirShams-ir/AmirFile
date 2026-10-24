@@ -90,11 +90,6 @@ async function createFile(data: { name: string; stream_url: string }) {
   await api.createFile({ folder_id: currentFolder.value, name: data.name, stream_url: data.stream_url, icon: "🎬" });
   files.value = await api.getFiles(currentFolder.value);
 }
-async function uploadFile(file: File) {
-  if (!currentFolder.value) throw new Error("Open a folder before uploading.");
-  await api.uploadFile(currentFolder.value, file);
-  files.value = await api.getFiles(currentFolder.value);
-}
 function copySelection() {
   if (selectedFolder.value) clipboard.value = { kind: "folder", action: "copy", item: selectedFolder.value };
   else if (selectedFile.value) clipboard.value = { kind: "file", action: "copy", item: selectedFile.value };
@@ -133,5 +128,5 @@ async function pasteSelection() {
 export function useLibrary() {
   return { folders, visibleFolders, files, currentFolder, currentFolderRecord, currentPath, canGoBack, loadFolders, navigateToFolder,
     openFolder, goRoot, goBack, createFolder, renameFolder, renameFile, deleteFolder, deleteFile, selectedFolder, selectedFile,
-    selectFolder, selectFile, clearSelection, createFile, uploadFile, refresh, clipboard, canEdit, canPaste, copySelection, cutSelection, pasteSelection };
+    selectFolder, selectFile, clearSelection, createFile, refresh, clipboard, canEdit, canPaste, copySelection, cutSelection, pasteSelection };
 }

@@ -1,31 +1,35 @@
 # AmirFile
 
-AmirFile is an independent Vue 3 + Vite + TypeScript file manager, using AmirDrive as a read-only UI reference. It is designed for Vercel, Neon PostgreSQL metadata, and Vercel Blob file storage.
+AmirFile is a personal file manager built with Vue 3, Vite and TypeScript. It is deployed as a Vercel project and uses Vercel Blob as its only persistence service.
+
+## How it stores data
+
+AmirFile stores **virtual files only**: each file entry contains a name and an HTTP(S) URL. The actual remote file is never uploaded to AmirFile or Vercel Blob.
+
+Folder records and virtual-file records are serialized into one small JSON Blob. The JSON content is encrypted with AES-GCM on the server before being written to the existing Blob store. The read/write token and encryption key never go to the browser. The Blob store used by this project is configured as public, so the stored object is ciphertext rather than plaintext; the application itself reads and updates it only through authenticated Vercel Functions. Conditional ETag writes help avoid losing simultaneous updates.
+
+**Keep `AMIRFILE_SESSION_SECRET` stable.** It is also used to derive the metadata encryption key. Changing it without migrating the stored metadata makes existing metadata unreadable.
 
 ## Features
 
 - Folder navigation and breadcrumbs
-- File and folder lists with modified timestamps
-- Create, rename, delete, copy, cut and paste operations
-- Light/dark theme preference independent from AmirDrive
-- File information dialog and URL-based virtual files
-- VLC and MX Player actions on Android
+- Create, rename, delete, copy, cut and paste folders and virtual-file entries
+- Add a virtual file with a name and an HTTP(S) URL
+- File information dialog, modified timestamps and URL copy
+- Android context-menu actions for VLC and MX Player
+- Light/dark theme preference
 - Password gate with an HTTP-only signed session cookie
-- Direct browser-to-Vercel-Blob uploads (up to the configured 2 GB per file)
-- Auto-initialization of the PostgreSQL tables on first authenticated API request
+- No binary-file upload feature and no external database dependency
 
-## Required Vercel setup
+## Required Vercel environment variables
 
-Create a Neon PostgreSQL database and a Vercel Blob store, then open **Vercel → Project → Settings → Environment Variables** for the `amirfile` project and add these values for Production and Preview:
+In **Vercel → Project → Settings → Environment Variables** for the `amirfile` project, configure these for Production and Preview:
 
-- `DATABASE_URL`: Neon PostgreSQL connection string.
-- `BLOB_READ_WRITE_TOKEN`: read/write token for your Vercel Blob store.
-- `AMIRFILE_ACCESS_PASSWORD`: a strong, private password of your choice for opening AmirFile.
-- `AMIRFILE_SESSION_SECRET`: a long, randomly generated secret used to sign sessions. Use a different value from the access password.
+- `BLOB_READ_WRITE_TOKEN`: read/write token connected to the Vercel Blob store.
+- `AMIRFILE_ACCESS_PASSWORD`: a strong, private password used to unlock AmirFile.
+- `AMIRFILE_SESSION_SECRET`: a long, randomly generated secret used to sign sessions and derive the metadata encryption key. Keep it private and stable.
 
-After adding the values, redeploy the project. Never put actual credentials in this repository or share them in chat. The API will return a JSON configuration error until required values are set; it will not silently pretend database writes succeeded.
-
-The tables are created automatically when the first authenticated database request is made. A matching SQL file is also provided at `db/schema.sql`.
+Redeploy after changing environment variables. Do not commit secrets or share them in chat. `DATABASE_URL` is not used.
 
 ## Local development
 
@@ -35,10 +39,12 @@ npm run dev
 npm run build
 ```
 
-Set the same environment variables in a local `.env` file (excluded by `.gitignore`). Do not commit it.
+For local development, configure the same environment variables in a local `.env` file. Do not commit it.
 
-## Deployment and security
+## API
 
-The application uses same-origin Vercel Functions under `/api`, so the UI and API deploy together. File/folder APIs require an authenticated session. Uploaded objects use Vercel Blob; virtual files can point to HTTP(S) URLs. Use this app for trusted personal file management and avoid sharing Blob URLs for sensitive files.
+All API routes are same-origin Vercel Functions under `/api`. Folder/file metadata routes require an authenticated session. `/api/ping` reports which required settings are present.
 
-AmirDrive is used as a read-only reference. No files are written to or deployed from the AmirDrive repository.
+Deleting a virtual-file entry removes only its AmirFile record; it does not delete the remote resource behind the URL.
+
+AmirDrive is a read-only reference for the frontend. The AmirDrive repository is not modified by AmirFile work.
