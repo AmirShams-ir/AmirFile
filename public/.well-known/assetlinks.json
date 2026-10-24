@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.amirfile.twa",
+        "sha256_cert_fingerprints": ["1F:5A:11:6A:C5:71:0B:B3:14:80:C8:B8:42:40:84:0E:77:A7:9E:B0:75:44:34:EC:78:14:98:17:A9:52:95:4D"]
+      }
+    }]
