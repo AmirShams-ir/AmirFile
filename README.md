@@ -6,7 +6,7 @@ AmirFile is a personal file manager built with Vue 3, Vite and TypeScript. It is
 
 AmirFile stores **virtual files only**: each file entry contains a name and an HTTP(S) URL. The actual remote file is never uploaded to AmirFile or Vercel Blob.
 
-Folder records and virtual-file records are serialized into one small JSON Blob. The JSON content is encrypted with AES-GCM on the server before being written to the existing Blob store. The read/write token and encryption key never go to the browser. The Blob store used by this project is configured as public, so the stored object is ciphertext rather than plaintext; the application itself reads and updates it only through authenticated Vercel Functions. Conditional ETag writes help avoid losing simultaneous updates.
+Folder records and virtual-file records are serialized into one small JSON Blob. The JSON content is encrypted with AES-GCM on the server before being written to the existing Blob store. The read/write token and encryption key never go to the browser. The Blob store used by this project is configured as public, so the stored object is ciphertext rather than plaintext; the application itself reads and updates it only through authenticated Vercel Functions. Writes use a simple overwrite model intended for personal, mostly sequential use. Avoid editing from multiple browser sessions at the same time because simultaneous writes can overwrite each other.
 
 **Keep `AMIRFILE_SESSION_SECRET` stable.** It is also used to derive the metadata encryption key. Changing it without migrating the stored metadata makes existing metadata unreadable.
 

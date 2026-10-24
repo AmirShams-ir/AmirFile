@@ -1,4 +1,4 @@
-import { BlobPreconditionFailedError, get, put } from "@vercel/blob";
+import { get, put } from "@vercel/blob";
 
 export interface FolderRecord {
   id: string;
@@ -29,7 +29,6 @@ export interface AmirFileState {
 
 type LoadedState = { state: AmirFileState; etag: string } | null;
 const DATA_PATH = "amirfile/metadata.json";
-const MAX_WRITE_ATTEMPTS = 5;
 
 function assertConfiguration() {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
@@ -96,17 +95,6 @@ async function loadState(): Promise<LoadedState> {
   return { state: await decryptState(contents), etag: result.blob.etag };
 }
 
-function isWriteConflict(error: unknown): boolean {
-  if (error instanceof BlobPreconditionFailedError) return true;
-  if (!error || typeof error !== "object") return false;
-  const candidate = error as { name?: unknown; message?: unknown; status?: unknown; statusCode?: unknown };
-  const name = typeof candidate.name === "string" ? candidate.name.toLowerCase() : "";
-  const message = typeof candidate.message === "string" ? candidate.message.toLowerCase() : "";
-  const status = Number(candidate.status ?? candidate.statusCode);
-  return status === 409 || status === 412 || name.includes("precondition") || name.includes("alreadyexists") ||
-    message.includes("already exists") || message.includes("precondition failed") || message.includes("etag");
-}
-
 export async function readState(): Promise<AmirFileState> {
   assertConfiguration();
   const loaded = await loadState();
@@ -115,33 +103,24 @@ export async function readState(): Promise<AmirFileState> {
 
 export async function updateState<T>(mutate: (state: AmirFileState) => T): Promise<T> {
   assertConfiguration();
-  for (let attempt = 0; attempt < MAX_WRITE_ATTEMPTS; attempt++) {
-    const loaded = await loadState();
-    const state = loaded?.state ?? emptyState();
-    const result = mutate(state);
-    const encrypted = await encryptState(state);
-    try {
-      if (loaded) {
-        await put(DATA_PATH, encrypted, {
-          access: "public",
-          allowOverwrite: true,
-          ifMatch: loaded.etag,
-          contentType: "application/json",
-          cacheControlMaxAge: 60,
-        });
-      } else {
-        // Do not overwrite on first creation: concurrent initial writes must retry and merge.
-        await put(DATA_PATH, encrypted, {
-          access: "public",
-          contentType: "application/json",
-          cacheControlMaxAge: 60,
-        });
-      }
-      return result;
-    } catch (error) {
-      if (isWriteConflict(error)) continue;
-      throw error;
-    }
+  // AmirFile is designed for personal, mostly sequential edits. Use an unconditional
+  // overwrite to avoid stale ETag preconditions preventing a normal create/update.
+  // Reads bypass the CDN cache so each operation starts from the latest origin copy.
+  const loaded = await loadState();
+  const state = loaded?.state ?? emptyState();
+  const result = mutate(state);
+  const encrypted = await encryptState(state);
+  try {
+    await put(DATA_PATH, encrypted, {
+      access: "public",
+      allowOverwrite: true,
+      contentType: "application/json",
+      cacheControlMaxAge: 0,
+    });
+  } catch (error) {
+    const detail = error instanceof Error ? { name: error.name, message: error.message } : error;
+    console.error("[AmirFile Blob write failed]", detail);
+    throw error;
   }
-  throw new Error("The AmirFile metadata changed during this request. Please retry.");
+  return result;
 }
