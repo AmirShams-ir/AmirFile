@@ -11,8 +11,8 @@
     "minimal-ui"
   ],
   "orientation": "any",
-  "background_color": "#d7dce1",
-  "theme_color": "#d7dce1",
+  "background_color": "#263d50",
+  "theme_color": "#263d50",
   "lang": "en",
   "dir": "ltr",
   "categories": [
@@ -20,7 +20,6 @@
     "utilities"
   ],
   "prefer_related_applications": false,
-  "screenshots": [],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -39,6 +38,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }
