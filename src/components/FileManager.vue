@@ -1,6 +1,6 @@
 <template><div class="file-manager" :class="{dark:isDark}">
 <template v-if="authReady && authenticated">
-<Toolbar :dark="isDark" @toggle-theme="toggleTheme" @lock="lockApp"/><NavigationBar/><Explorer/>
+<Toolbar :dark="isDark" @toggle-theme="toggleTheme" @lock="lockApp"/><NavigationBar/><Explorer :dark="isDark"/>
 <BottomToolbar :can-download="!!library.selectedFile.value" :can-edit="library.canEdit.value" :can-paste="library.canPaste.value" @add="addItem" @rename="renameItem" @new-file="newFile" @download="downloadFile" @copy="library.copySelection" @cut="library.cutSelection" @paste="pasteClipboard" @delete="deleteItem" @info="showInfo"/>
 <InputDialog v-model="showInput" :title="dialogTitle" :value="dialogValue" @ok="onInputOk"/><ConfirmDialog v-model="showConfirm" :title="confirmTitle" :message="confirmMessage" @confirm="onDeleteConfirm"/><FileDialog v-model="showFileDialog" title="New Virtual File" :name="fileName" :url="fileUrl" @ok="onFileOk"/><InfoDialog v-model="showInfoDialog" :item="library.selectedFile.value||library.selectedFolder.value"/>
 <div v-if="error" class="toast-error" role="alert"><span>{{error}}</span><button type="button" @click="error=''">Dismiss</button></div>
