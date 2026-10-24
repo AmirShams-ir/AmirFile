@@ -2,7 +2,7 @@
   "id": "/",
   "name": "AmirFile",
   "short_name": "AmirFile",
-  "description": "Personal file manager and cloud file storage.",
+  "description": "A personal cloud file manager for securely organizing and accessing your files.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -11,8 +11,8 @@
     "minimal-ui"
   ],
   "orientation": "any",
-  "background_color": "#d7dce1",
-  "theme_color": "#d7dce1",
+  "background_color": "#263d50",
+  "theme_color": "#263d50",
   "lang": "en",
   "dir": "ltr",
   "categories": [
@@ -20,25 +20,12 @@
     "utilities"
   ],
   "prefer_related_applications": false,
-  "screenshots": [],
   "icons": [
     {
-      "src": "/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ]
 }
